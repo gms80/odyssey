@@ -1,6 +1,8 @@
 #ifndef ODYSSEY_READAHEAD_H
 #define ODYSSEY_READAHEAD_H
 
+#include <signal.h>
+
 /*
  * Odyssey.
  *
@@ -78,6 +80,8 @@ static inline void
 od_readahead_pos_read_advance(od_readahead_t *readahead, int value)
 {
 	readahead->pos_read += value;
+	if (readahead->pos_read > readahead->pos)
+		raise(SIGABRT);
 }
 
 static inline void
