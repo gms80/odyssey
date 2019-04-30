@@ -20,6 +20,14 @@ struct od_readahead
 };
 
 static inline void
+assert_readahead_valid(const od_readahead_t *readahead) {
+	assert(readahead->buf);
+	if (readahead->pos_read > readahead->pos ||
+	    readahead->pos > readahead->size )
+		raise(SIGABRT);
+}
+
+static inline void
 od_readahead_init(od_readahead_t *readahead)
 {
 	readahead->buf      = NULL;
@@ -48,25 +56,28 @@ od_readahead_prepare(od_readahead_t *readahead, int size)
 static inline int
 od_readahead_left(od_readahead_t *readahead)
 {
-	assert(readahead->buf);
+	assert_readahead_valid(readahead);
 	return readahead->size - readahead->pos;
 }
 
 static inline int
 od_readahead_unread(od_readahead_t *readahead)
 {
+	assert_readahead_valid(readahead);
 	return readahead->pos - readahead->pos_read;
 }
 
 static inline char*
 od_readahead_pos(od_readahead_t *readahead)
 {
+	assert_readahead_valid(readahead);
 	return (char*)machine_msg_data(readahead->buf) + readahead->pos;
 }
 
 static inline char*
 od_readahead_pos_read(od_readahead_t *readahead)
 {
+	assert_readahead_valid(readahead);
 	return (char*)machine_msg_data(readahead->buf) + readahead->pos_read;
 }
 
@@ -74,14 +85,14 @@ static inline void
 od_readahead_pos_advance(od_readahead_t *readahead, int value)
 {
 	readahead->pos += value;
+	assert_readahead_valid(readahead);
 }
 
 static inline void
 od_readahead_pos_read_advance(od_readahead_t *readahead, int value)
 {
 	readahead->pos_read += value;
-	if (readahead->pos_read > readahead->pos)
-		raise(SIGABRT);
+	assert_readahead_valid(readahead);
 }
 
 static inline void
@@ -100,6 +111,8 @@ od_readahead_reuse(od_readahead_t *readahead)
 	memmove(data, data + readahead->pos_read, unread);
 	readahead->pos      = unread;
 	readahead->pos_read = 0;
+
+	assert_readahead_valid(readahead);
 }
 
 #endif /* ODYSSEY_READAHEAD_H */
