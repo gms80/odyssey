@@ -204,20 +204,6 @@ od_read(od_io_t *io, uint32_t time_ms)
 	uint32_t size;
 	size = kiwi_read_size((char*)&header, sizeof(header));
 
-	if ( od_unlikely(
-			size < sizeof(uint32_t) ||
-		    header.type < 0x20 ||
-		    (size > 30000 && !VALID_LONG_MESSAGE_TYPE(header.type)))
-		    ) {
-		/*
-		 * This is not a postgres protocol v3 message
-		 * We should drop connection ASAP
-		 * Validation is performed per PostgreSQL impl
-		 * For reference see
-		 * https://github.com/postgres/postgres/blob/7bac3acab4d5c3f2c35aa3a7bea08411d83fd5bc/src/interfaces/libpq/fe-protocol3.c#L91-L100
-		 */
-		return NULL;
-	}
 	size -= sizeof(uint32_t);
 
 	machine_msg_t *msg;
